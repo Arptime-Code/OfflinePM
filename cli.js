@@ -40,7 +40,14 @@ async function init() {
   const packageJson = {
     name: projectName,
     description: "",
-    functions: []
+    functions: [
+      {
+        name: "exampleFunction",
+        parameters: ["param1", "param2"],
+        import: "const { exampleFunction } = require('./path/to/module')",
+        description: "Description of what this function does"
+      }
+    ]
   };
   
   const readmeContent = `# ${projectName}
