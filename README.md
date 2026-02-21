@@ -31,7 +31,7 @@ offlinepm -s
 
 ### `offlinepm -r` (Read/Convert)
 
-Convert `package.offlinepm.json` to a formatted `README.md` documentation file.
+Convert `package.offlinepm.json` to a formatted `README.md` documentation file. Automatically scans `.offlinepm-local/` directory and updates the `dependencies` field in both JSON and README.
 
 ```bash
 offlinepm -r
@@ -39,7 +39,7 @@ offlinepm -r
 
 ### `offlinepm -c <project-name>` (Checkout)
 
-Copy a saved project from `~/.offlinepm/<project-name>/` to the current directory.
+Copy a saved project from `~/.offlinepm/<project-name>/` to `.offlinepm-local/<project-name>/` in the current directory.
 
 ```bash
 offlinepm -c my-awesome-project
@@ -68,6 +68,7 @@ The `package.offlinepm.json` file structure:
 {
   "name": "my-project",
   "description": "A brief description of your project",
+  "dependencies": ["dependency-1", "dependency-2"],
   "functions": [
     {
       "name": "functionName",
@@ -85,6 +86,7 @@ The `package.offlinepm.json` file structure:
 |-------|------|-------------|
 | `name` | string | Project name (defaults to folder name) |
 | `description` | string | Brief project description |
+| `dependencies` | array | List of local dependencies (auto-populated from `.offlinepm-local/`) |
 | `functions` | array | List of exported functions |
 | `functions[].name` | string | Function name |
 | `functions[].parameters` | array | List of parameter names |
@@ -98,8 +100,9 @@ When using `offlinepm -r`, the generated README includes:
 1. **Title** - Project name
 2. **Description** - From JSON description field
 3. **Functions Table** - Auto-generated from functions array
-4. **Installation** - Checkout command for this project
-5. **Usage** - Placeholder for examples
+4. **Dependencies** - List of projects in `.offlinepm-local/`
+5. **Installation** - Checkout command for this project
+6. **Usage** - Placeholder for examples
 
 ## Example Workflow
 

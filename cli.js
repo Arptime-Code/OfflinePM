@@ -40,6 +40,7 @@ async function init() {
   const packageJson = {
     name: projectName,
     description: "",
+    dependencies: [],
     functions: [
       {
         name: "exampleFunction",
@@ -128,6 +129,22 @@ async function copyDirectory(src, dest) {
   }
 }
 
+async function getLocalDependencies(cwd) {
+  const localDir = path.join(cwd, '.offlinepm-local');
+  const dependencies = [];
+  
+  try {
+    const entries = await fs.readdir(localDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        dependencies.push(entry.name);
+      }
+    }
+  } catch {}
+  
+  return dependencies;
+}
+
 async function convertJsonToReadme() {
   const cwd = process.cwd();
   const packagePath = path.join(cwd, 'package.offlinepm.json');
@@ -142,6 +159,12 @@ async function convertJsonToReadme() {
     process.exit(1);
   }
   
+  const dependencies = await getLocalDependencies(cwd);
+  packageJson.dependencies = dependencies;
+  
+  await fs.writeFile(packagePath, JSON.stringify(packageJson, null, 2));
+  console.log('Updated dependencies in package.offlinepm.json');
+  
   const { name, description, functions } = packageJson;
   
   let functionsTable = '';
@@ -154,6 +177,14 @@ ${functions.map(fn => {
 }).join('\n')}`;
   }
   
+  let dependenciesSection = '';
+  if (dependencies.length > 0) {
+    dependenciesSection = `## Dependencies
+
+${dependencies.map(dep => `- ${dep}`).join('\n')}
+`;
+  }
+  
   const readmeContent = `# ${name || 'Project'}
 
 ## Description
@@ -163,7 +194,7 @@ ${description || 'No description provided.'}
 
 ${functionsTable || 'No functions defined.'}
 
-## Installation
+${dependenciesSection}## Installation
 
 \`\`\`bash
 offlinepm -c ${name || 'project-name'}
@@ -187,7 +218,8 @@ async function checkoutProject(projectName) {
   
   const sourceDir = path.join(OFFLINEPM_DIR, projectName);
   const cwd = process.cwd();
-  const targetDir = path.join(cwd, projectName);
+  const localDir = path.join(cwd, '.offlinepm-local');
+  const targetDir = path.join(localDir, projectName);
   
   try {
     await fs.access(sourceDir);
@@ -203,6 +235,7 @@ async function checkoutProject(projectName) {
     process.exit(1);
   }
   
+  await fs.mkdir(localDir, { recursive: true });
   await copyDirectory(sourceDir, targetDir);
   console.log(`Checked out project "${projectName}" to ${targetDir}`);
 }
